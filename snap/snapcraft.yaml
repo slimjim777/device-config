@@ -1,9 +1,8 @@
-name: <name>-device-config
+name: device-config-demo
 version: "0.1"
 summary: Ubuntu Device Configuration
 description: |
   Device configuration for Ubuntu Core.
-#icon: icons/verticals.png
 confinement: strict
 grade: stable
 base: core18
