@@ -15,10 +15,12 @@
  *
  */
 
-package service
+package network
 
 import (
 	"bufio"
+	"fmt"
+	"github.com/CanonicalLtd/device-config/service/dbus"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
@@ -59,11 +61,11 @@ type NetplanService interface {
 // Netplan implements actions for managing netplan
 type Netplan struct {
 	deviceNetplan *NetplanYAML
-	dBus          DBusService
+	dBus          dbus.Service
 }
 
 // NewNetplan creates a netplan object from a config file
-func NewNetplan(dBus DBusService) *Netplan {
+func NewNetplan(dBus dbus.Service) *Netplan {
 	deviceNetplan := &NetplanYAML{Network: Network{Version: 2, Renderer: "networkd"}}
 
 	data, err := readNetplanFile()
@@ -97,6 +99,21 @@ func (np *Netplan) Apply() error {
 
 // Store stores the updated network settings
 func (np *Netplan) Store(ethernet Ethernet) error {
+	// Validate the network addresses (for manual config only)
+	if ethernet.DHCP4 != "true" {
+		addresses := []string{}
+		for _, a := range ethernet.Addresses {
+			ip, mask, err := validateAddress(a)
+			if err != nil {
+				return err
+			}
+			addr := fmt.Sprintf("%s/%d", ip, mask)
+
+			addresses = append(addresses, addr)
+		}
+		ethernet.Addresses = addresses
+	}
+
 	// Initialize the list of interfaces
 	if np.deviceNetplan.Network.Ethernets == nil {
 		np.deviceNetplan.Network.Ethernets = map[string]Ethernet{}
