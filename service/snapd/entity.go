@@ -15,21 +15,20 @@
  *
  */
 
-package web
+package snapd
 
-import "net/http"
+import "time"
 
-// AppConfig holds the config for application
-type AppConfig struct {
-	SnapControl    bool     `json:"snapControl"`
-	HideInterfaces []string `json:"hideInterfaces"`
-}
-
-// AppConfig is the API to get the application config
-func (srv Web) AppConfig(w http.ResponseWriter, r *http.Request) {
-	// Get the current settings
-	cfg := AppConfig{SnapControl: srv.Settings.SnapControl, HideInterfaces: srv.Settings.HideInterfaces}
-
-	// Return the response - snapd returns in AppConfig format
-	formatAppConfigResponse(cfg, w)
+// Snap holds the details of snap on a device
+type Snap struct {
+	Name          string    `json:"name"`
+	InstalledSize int64     `json:"installedSize"`
+	InstalledDate time.Time `json:"installedDate"`
+	Status        string    `json:"status"`
+	Channel       string    `json:"channel"`
+	Confinement   string    `json:"confinement"`
+	Version       string    `json:"version"`
+	Revision      int       `json:"revision"`
+	Devmode       bool      `json:"devmode"`
+	Config        string    `json:"config"`
 }

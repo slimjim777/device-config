@@ -24,10 +24,10 @@ import (
 	"testing"
 )
 
-func TestWeb_Proxy(t *testing.T) {
+func TestWeb_SnapList(t *testing.T) {
 	tests := []struct {
 		name       string
-		confError  bool
+		setErr     bool
 		wantStatus int
 	}{
 		{"valid", false, http.StatusOK},
@@ -35,39 +35,44 @@ func TestWeb_Proxy(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			srv := NewWebService(config.DefaultArgs(), &mockAuth{}, &mockNetplan{}, &mockSnapd{confError: tt.confError}, &mockTime{})
+			t.Run(tt.name, func(t *testing.T) {
+				srv := NewWebService(config.DefaultArgs(), &mockAuth{}, &mockNetplan{}, &mockSnapd{snapsErr: tt.setErr}, &mockTime{})
 
-			w := sendRequestWithAuth("GET", "/v1/proxy", nil, srv)
-			if w.Code != tt.wantStatus {
-				t.Errorf("Proxy() expected HTTP status '%d', got: %v", tt.wantStatus, w.Code)
-			}
+				w := sendRequestWithAuth("GET", "/v1/snaps", nil, srv)
+				if w.Code != tt.wantStatus {
+					t.Errorf("SnapList() expected HTTP status '%d', got: %v", tt.wantStatus, w.Code)
+				}
+			})
 		})
 	}
 }
 
-func TestWeb_ProxyUpdate(t *testing.T) {
-	proxyHTTP := []byte(`{"http":"192.168.2.1:4000", "https":"192.168.2.1:4001"}`)
-	proxyFTP := []byte(`{"ftp":"192.168.2.1:4002"}`)
+func TestWeb_SnapSet(t *testing.T) {
+	validConf := []byte(`{"title":"Hello World"}`)
+	invalidConf := []byte(`{'title':'Hello World''}`)
+
 	tests := []struct {
 		name       string
-		setconfErr bool
+		setErr     bool
 		data       []byte
 		wantStatus int
 	}{
-		{"valid-http", false, proxyHTTP, http.StatusOK},
-		{"valid-http-fail", true, proxyHTTP, http.StatusBadRequest},
-		{"valid-ftp", false, proxyFTP, http.StatusOK},
+		{"valid-conf", false, validConf, http.StatusOK},
+		{"valid-conf-fail", true, validConf, http.StatusBadRequest},
+		{"invalid-json", false, invalidConf, http.StatusBadRequest},
 		{"invalid-data", false, []byte(`\u1000`), http.StatusBadRequest},
 		{"invalid-empty", false, nil, http.StatusBadRequest},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			srv := NewWebService(config.DefaultArgs(), &mockAuth{}, &mockNetplan{}, &mockSnapd{setConfError: tt.setconfErr}, &mockTime{})
+			t.Run(tt.name, func(t *testing.T) {
+				srv := NewWebService(config.DefaultArgs(), &mockAuth{}, &mockNetplan{}, &mockSnapd{setConfError: tt.setErr}, &mockTime{})
 
-			w := sendRequestWithAuth("POST", "/v1/proxy", bytes.NewReader(tt.data), srv)
-			if w.Code != tt.wantStatus {
-				t.Errorf("Proxy() expected HTTP status '%d', got: %v", tt.wantStatus, w.Code)
-			}
+				w := sendRequestWithAuth("PUT", "/v1/snaps/my-snap", bytes.NewReader(tt.data), srv)
+				if w.Code != tt.wantStatus {
+					t.Errorf("SnapSet() expected HTTP status '%d', got: %v", tt.wantStatus, w.Code)
+				}
+			})
 		})
 	}
 }
