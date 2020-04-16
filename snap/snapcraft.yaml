@@ -1,5 +1,5 @@
 name: device-config-demo
-version: "1.1.1"
+version: "1.1.2"
 summary: Ubuntu Device Configuration
 description: |
   Device configuration for Ubuntu Core.
