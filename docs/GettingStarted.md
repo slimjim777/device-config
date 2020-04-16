@@ -62,6 +62,12 @@ are available:
 `/time`: configure the time, time zone, and the use of a time server
 
 ### Network configuration
-The application generates a dedicated netplan file (`/etc/netplan/00-device-config.yaml`)
-and does not remove or any other netplan YAML file that is on the device. The
+The application generates a dedicated netplan file (`/etc/netplan/99-device-config.yaml`)
+and removes any other netplan YAML file that is on the device. The
 netplan file will only be applied when the Apply button is clicked.
+
+### User interface customization
+The static directory of the snap contains the React.js web interface. This can
+be completely replaced by connecting a `content` interface to the `web-resources`
+content plug. See the [content interface](https://snapcraft.io/docs/content-interface) 
+documentation for more details.
