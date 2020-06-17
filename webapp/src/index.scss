@@ -33,6 +33,11 @@ button:focus {
   height: 30px;
 }
 
+.system {
+  color: #cacaca;
+  font-size: small;
+}
+
 #footer {
   margin: 2em 0;
   padding-top: 2em;
@@ -103,7 +108,7 @@ form#lang-form select {
   border: 0;
   margin: .3rem;
   color: #fff;
-  font-size: 1.0rem;
+  font-size: 16px;
   background-position-x: right;
 }
 
@@ -150,4 +155,11 @@ form#lang-form option {
   background-color: #F00;
   border-radius: 50%;
   box-shadow: rgba(0, 0, 0, 0.2) 0 0px 1px 0px, inset #441313 0 0px 9px, #F00 0 1px 5px;
+}
+
+h5 {
+  text-transform: uppercase;
+  color: #666666;
+  font-weight: 400;
+  font-size: 0.76rem;
 }
