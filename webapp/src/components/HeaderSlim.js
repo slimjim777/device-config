@@ -21,7 +21,7 @@ import Constants from "./constants";
 import {Select} from "@canonical/react-components";
 
 
-let links = ['network','time'];
+let links = ['network','time', 'settings'];
 
 class HeaderSlim extends Component {
     constructor(props) {
@@ -76,7 +76,7 @@ class HeaderSlim extends Component {
                     <div className="p-navigation__logo">
                         <div className="u-vertically-center">
                             <a href="/" className="p-navigation__link">
-                                <img src="/static/images/logo.png" alt="ubuntu" />
+                                <img src="/static/custom/logo.png" alt="ubuntu" />
                             </a>
                         </div>
                         <div className="system">

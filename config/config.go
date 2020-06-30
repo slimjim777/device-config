@@ -32,6 +32,7 @@ const (
 	DefaultPort              = "8888"
 	DefaultDocRoot           = "./static"
 	DefaultIndexTemplate     = "index.html"
+	DefaultFactoryReset      = false
 	DefaultSnapControl       = false
 	DefaultUseNetworkManager = false
 	paramsEnvVar             = "SNAP_DATA"
@@ -46,8 +47,10 @@ type Settings struct {
 	Port                   string
 	DocRoot                string
 	IndexTemplate          string
+	FactoryReset           bool
 	SnapControl            bool
 	UseNetworkManager      bool
+	Custom                 Custom
 }
 
 // DefaultArgs checks the environment variables
@@ -59,6 +62,7 @@ func DefaultArgs() *Settings {
 		Port:                   DefaultPort,
 		DocRoot:                DefaultDocRoot,
 		IndexTemplate:          DefaultIndexTemplate,
+		FactoryReset:           DefaultFactoryReset,
 		SnapControl:            DefaultSnapControl,
 		UseNetworkManager:      DefaultUseNetworkManager,
 	}
@@ -73,14 +77,19 @@ func ReadParameters() *Settings {
 	dat, err := ioutil.ReadFile(p)
 	if err != nil {
 		log.Printf("Error reading config parameters: %v", err)
+		config.Custom = readCustomSettings()
 		return config
 	}
 
 	err = json.Unmarshal(dat, config)
 	if err != nil {
 		log.Printf("Error parsing config parameters: %v", err)
+		config.Custom = readCustomSettings()
 		return config
 	}
+
+	// Add the custom settings
+	config.Custom = readCustomSettings()
 
 	return config
 }

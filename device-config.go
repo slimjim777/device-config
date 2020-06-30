@@ -13,6 +13,7 @@ import (
 	"github.com/CanonicalLtd/device-config/service/network"
 	"github.com/CanonicalLtd/device-config/service/snapd"
 	"github.com/CanonicalLtd/device-config/service/system"
+	"github.com/CanonicalLtd/device-config/service/transfer"
 	"github.com/CanonicalLtd/device-config/web"
 	"log"
 	"os"
@@ -35,8 +36,9 @@ func main() {
 	timeSrv := service.NewTime(dBus)
 	systemSrv := system.NewSystem()
 	netSrv := network.Factory(settings, dBus)
+	xferSrv := transfer.NewTransfer(dBus, snapdClient)
 
-	srv := web.NewWebService(settings, authSrv, netSrv, snapdClient, timeSrv, systemSrv)
+	srv := web.NewWebService(settings, authSrv, netSrv, snapdClient, timeSrv, systemSrv, xferSrv)
 
 	// Start the web service
 	log.Fatal(srv.Start())
@@ -47,6 +49,7 @@ func configure(cfg *config.Settings) {
 		configureOnly bool
 		iface         string
 		listenOn      string
+		factoryReset  bool
 		snapControl   bool
 		useNM         bool
 		hideIfaces    string
@@ -54,12 +57,13 @@ func configure(cfg *config.Settings) {
 	flag.BoolVar(&configureOnly, "configure", false, "Configure the application and exit")
 	flag.StringVar(&iface, "interface", config.DefaultInterfaceIP, "The default network interface for the service")
 	flag.StringVar(&listenOn, "listenon", config.DefaultInterfaceDevice, "Force the service to listen a specific network device e.g. eth0")
-	flag.BoolVar(&snapControl, "snapcontrol", config.DefaultSnapControl, "Display configuration that needs the snapd-control interface)")
+	flag.BoolVar(&factoryReset, "factoryreset", config.DefaultFactoryReset, "Display option that allows factory reset of the device")
+	flag.BoolVar(&snapControl, "snapcontrol", config.DefaultSnapControl, "Display configuration that needs the snapd-control interface")
 	flag.BoolVar(&useNM, "nm", config.DefaultUseNetworkManager, "Use network manager instead of netplan")
 	flag.StringVar(&hideIfaces, "hide", "", "Comma-separated list of interfaces to hide")
 	flag.Parse()
 
-	log.Printf("Device config: configure=%v, proxy=%v, interface=%v, nm=%v, hide=%v", configureOnly, snapControl, iface, useNM, hideIfaces)
+	log.Printf("Device config: configure=%v, snapcontrol=%v, interface=%v, nm=%v, hide=%v, factoryreset=%v", configureOnly, snapControl, iface, useNM, hideIfaces, factoryReset)
 	if !configureOnly {
 		// No changes if we're not configuring the app
 		return
@@ -69,6 +73,7 @@ func configure(cfg *config.Settings) {
 	cfg.NetworkInterfaceIP = iface
 	cfg.NetworkInterfaceDevice = listenOn
 	cfg.SnapControl = snapControl
+	cfg.FactoryReset = factoryReset
 	cfg.UseNetworkManager = useNM
 	cfg.HideInterfaces = strings.Split(hideIfaces, ",")
 	err := config.StoreParameters(cfg)

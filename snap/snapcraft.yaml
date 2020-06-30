@@ -10,7 +10,13 @@ base: core18
 plugs:
   web-resources:
     interface: content
-    target: $SNAP/static
+    target: $SNAP/static/custom
+# this privileged interface for factory reset
+#  boot-config:
+#    interface: system-files
+#    write:
+#      - /var/lib/snapd/hostfs/boot/grub/grubenv
+
 
 apps:
   run:
@@ -24,7 +30,9 @@ apps:
       - timeserver-control
       - timezone-control
       - system-observe
-      #- snapd-control          # this privileged interface for proxy setting
+#      - snapd-control          # this privileged interface for proxy setting
+#      - boot-config            # this privileged interface for factory reset
+#      - shutdown               # this privileged interface for factory reset
 
 parts:
   application:
@@ -47,3 +55,9 @@ parts:
     organize:
       "*": /bin/
 
+  # this is need for factory reset
+#  grub:
+#    plugin: nil
+#    stage-packages:
+#      - to amd64:
+#          - grub-common

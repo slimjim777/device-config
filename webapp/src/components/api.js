@@ -27,6 +27,10 @@ let service = {
         return axios.post(constants.baseUrl + 'login', query);
     },
 
+    factoryReset:  (query, cancelCallback) => {
+        return axios.post(constants.baseUrl + 'factory-reset', query);
+    },
+
     networkGet: () => {
         return axios.get(constants.baseUrl + 'network');
     },
@@ -71,6 +75,13 @@ let service = {
         return axios.put(constants.baseUrl + 'snaps/' + snap, settings);
     },
 
+    transferExport: () => {
+        return constants.baseUrl + 'transfer/export';
+    },
+
+    transferImport: (cfg) => {
+        return axios.post(constants.baseUrl + 'transfer/import', cfg);
+    },
 }
 
 export default service

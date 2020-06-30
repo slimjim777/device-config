@@ -23,6 +23,7 @@ import (
 	"github.com/CanonicalLtd/device-config/service"
 	"github.com/CanonicalLtd/device-config/service/network"
 	"github.com/CanonicalLtd/device-config/service/snapd"
+	"github.com/CanonicalLtd/device-config/service/transfer"
 	"github.com/snapcore/snapd/client"
 	"time"
 )
@@ -125,6 +126,13 @@ func (snap *mockSnapd) List(names []string, opts *client.ListOptions) ([]snapd.S
 	return []snapd.Snap{}, nil
 }
 
+func (snap *mockSnapd) SetProxy(http, https, ftp string) error {
+	if snap.setConfError {
+		return fmt.Errorf("MOCK snapd setconf error")
+	}
+	return nil
+}
+
 type mockTime struct{}
 
 func (t *mockTime) Current() *service.Time {
@@ -145,10 +153,10 @@ func (t *mockTime) Apply(ntp bool, timezone, setTime string) error {
 
 func mockInterfacesValid() ([]network.HardwareInterface, error) {
 	return []network.HardwareInterface{
-		{Name: "enp3s0", MACAddress: "enp3s0-mac-address"},
-		{Name: "eth0", MACAddress: "eth0-mac-address"},
-		{Name: "eth1", MACAddress: "eth1-mac-address"},
-		{Name: "wlan0", MACAddress: "wlan0-mac-address"},
+		{Name: "enp3s0", MACAddress: "enp3s0:mac:address"},
+		{Name: "eth0", MACAddress: "eth0:mac:address"},
+		{Name: "eth1", MACAddress: "eth1:mac:address"},
+		{Name: "wlan0", MACAddress: "wlan0:mac:address"},
 	}, nil
 }
 
@@ -157,9 +165,10 @@ func mockInterfacesNone() ([]network.HardwareInterface, error) {
 }
 
 type mockSystem struct {
-	cpuErr  bool
-	memErr  bool
-	diskErr bool
+	cpuErr   bool
+	memErr   bool
+	diskErr  bool
+	resetErr bool
 }
 
 func (sys *mockSystem) CPU() (float64, error) {
@@ -181,4 +190,33 @@ func (sys *mockSystem) Disk() (float64, error) {
 		return 0, fmt.Errorf("MOCK disk error")
 	}
 	return 85.5, nil
+}
+
+func (sys *mockSystem) FactoryReset() error {
+	if sys.resetErr {
+		return fmt.Errorf("MOCK reset error")
+	}
+	return nil
+}
+
+type mockTransfer struct {
+	withErr bool
+}
+
+func (xfer *mockTransfer) Export() (*transfer.Config, error) {
+	if xfer.withErr {
+		return nil, fmt.Errorf("MOCK transfer error")
+	}
+	return &transfer.Config{
+		NTP:        true,
+		Timezone:   "Europe/London",
+		ProxyHTTPS: "192.168.2.1",
+	}, nil
+}
+
+func (xfer *mockTransfer) Import(cfg transfer.Config) error {
+	if xfer.withErr {
+		return fmt.Errorf("MOCK transfer error")
+	}
+	return nil
 }
