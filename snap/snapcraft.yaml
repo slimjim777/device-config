@@ -68,12 +68,6 @@ parts:
     build-packages:
       - gcc
 
-  static:
-    source: static
-    plugin: dump
-    organize:
-      "*": /static/
-
   bin:
     source: snap/local
     plugin: dump
